@@ -169,6 +169,22 @@ def _first_valid_u16(values: list[int]) -> int | None:
     return None
 
 
+def is_valid_sma_value(value: int | None) -> bool:
+    """Return False for SMA invalid/not-available marker values.
+
+    Some SMA Bluetooth inverters still answer while going to sleep, but return
+    marker values such as 0x80000000 instead of real measurements. These must
+    not be published as Home Assistant sensor values.
+    """
+    return value not in (
+        None,
+        0x80000000,
+        0xFFFFFFFF,
+        0xFFFFFEFE,
+        0xFEFFFFFE,
+    )
+
+
 class SMABluetoothClient:
     def __init__(self, bt_address, password, timeout=8):
         self.bt_address = bt_address
@@ -477,9 +493,13 @@ class SMABluetoothClient:
                     0x002622FF,
                 ):
                     if lri == 0x00260100 and vals and SENSOR_ENERGY_TOTAL in wanted:
-                        values[SENSOR_ENERGY_TOTAL] = round(vals[0] / 1000, 3)
+                        raw = vals[0]
+                        if is_valid_sma_value(raw):
+                            values[SENSOR_ENERGY_TOTAL] = round(raw / 1000, 3)
                     elif lri == 0x00262200 and vals and SENSOR_ENERGY_TODAY in wanted:
-                        values[SENSOR_ENERGY_TODAY] = round(vals[0] / 1000, 3)
+                        raw = vals[0]
+                        if is_valid_sma_value(raw):
+                            values[SENSOR_ENERGY_TODAY] = round(raw / 1000, 3)
 
             if SENSOR_AC_POWER in wanted:
                 for code, lri, cls, ts, vals in self._request(
@@ -488,7 +508,9 @@ class SMABluetoothClient:
                     0x00263FFF,
                 ):
                     if lri == 0x00263F00 and vals:
-                        values[SENSOR_AC_POWER] = int(vals[2] if len(vals) >= 3 else vals[0])
+                        raw = vals[2] if len(vals) >= 3 else vals[0]
+                        if is_valid_sma_value(raw):
+                            values[SENSOR_AC_POWER] = int(raw)
 
             if SENSOR_TEMPERATURE in wanted:
                 try:
@@ -499,7 +521,8 @@ class SMABluetoothClient:
                     ):
                         if lri == 0x00237700 and vals:
                             raw = vals[2] if len(vals) >= 3 else vals[0]
-                            values[SENSOR_TEMPERATURE] = round(raw / 100, 2)
+                            if is_valid_sma_value(raw):
+                                values[SENSOR_TEMPERATURE] = round(raw / 100, 2)
                 except SMAError:
                     pass
 

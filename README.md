@@ -29,6 +29,7 @@ This integration talks directly to the inverter over Bluetooth. It does **not** 
 | Energy Today | kWh | Daily energy production |
 | Energy Total | kWh | Lifetime energy production |
 | Inverter Temperature | °C | Internal inverter temperature, if supported by the inverter |
+| Status | - | Inverter operating state: `Producing`, `Sleeping`, or `Offline` |
 
 ### Binary sensors
 
@@ -133,7 +134,16 @@ Default polling intervals:
 
 Older SMA Bluetooth inverters may stop responding at night when the inverter goes to sleep. This is expected behavior.
 
-The integration treats this as a normal sleep state and backs off reconnect attempts instead of flooding the Bluetooth stack or filling the Home Assistant log with errors.
+The integration treats this as a normal sleep state and backs off reconnect attempts instead of flooding the Bluetooth
+
+### Status sensor states
+
+| State | Meaning |
+| --- | --- |
+| `Producing` | Bluetooth communication is working and AC power is greater than 0 W |
+| `Sleeping` | The inverter is reachable or recently reachable, but no valid AC power value is currently available |
+| `Offline` | No recent successful SMA communication |
+ stack or filling the Home Assistant log with errors.
 
 ## Troubleshooting
 
@@ -329,3 +339,12 @@ logger:
 Diese Integration wurde mit einem SMA Sunny Boy 4000TL-20 auf Home Assistant OS entwickelt und getestet. Die Kommunikation erfolgt nativ über Python RFCOMM.
 
 Das Projekt wurde von der langjährigen Arbeit der Community am SMA-Bluetooth-Protokoll inspiriert, unter anderem SBFspot. SBFspot wird für diese Integration nicht benötigt.
+
+
+## Status-Sensor Zustände
+
+| Status | Bedeutung |
+| --- | --- |
+| `Producing` | Bluetooth-Kommunikation funktioniert und AC-Leistung ist größer als 0 W |
+| `Sleeping` | Der Wechselrichter ist erreichbar bzw. war kürzlich erreichbar, liefert aber aktuell keinen gültigen AC-Leistungswert |
+| `Offline` | Keine aktuelle erfolgreiche SMA-Kommunikation |
