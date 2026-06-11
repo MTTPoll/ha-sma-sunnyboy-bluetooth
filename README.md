@@ -1,0 +1,2 @@
+# ha-sma-sunnyboy-bluetooth
+
