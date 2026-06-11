@@ -73,6 +73,20 @@ Please open an issue if you successfully test another model.
 
 ---
 
+## ℹ️ Startup Behavior
+
+To prevent Home Assistant startup delays, the integration intentionally waits until Home Assistant has fully completed its startup sequence.
+
+The first inverter connection attempt is started approximately 30 seconds after Home Assistant reports that startup is complete.
+
+As a result:
+
+- Sensors may initially appear as unavailable after a Home Assistant restart.
+- Values are typically available within 30–60 seconds.
+- This behavior is intentional and prevents Bluetooth connection attempts from delaying other Home Assistant integrations during startup.
+
+If your inverter is sleeping (for example during nighttime), the integration will automatically retry later and reconnect when the inverter becomes available again.
+
 ## 📦 Installation
 
 ### HACS Installation
@@ -285,6 +299,20 @@ Wenn dein Wechselrichter SMA Bluetooth RFCOMM verwendet, besteht eine gute Chanc
 Bitte erstelle ein Issue, wenn du ein weiteres Modell erfolgreich getestet hast.
 
 ---
+
+## ℹ️ Startverhalten
+
+Um den Start von Home Assistant nicht zu verzögern, wartet die Integration bewusst darauf, dass Home Assistant vollständig gestartet ist.
+
+Der erste Verbindungsversuch zum Wechselrichter erfolgt ungefähr 30 Sekunden nach Abschluss des Home-Assistant-Starts.
+
+Dadurch kann es nach einem Neustart vorkommen, dass:
+
+- Sensoren zunächst als „Nicht verfügbar“ angezeigt werden.
+- Die ersten Werte erst nach etwa 30–60 Sekunden erscheinen.
+- Dieses Verhalten ist beabsichtigt und verhindert, dass Bluetooth-Verbindungen andere Integrationen beim Start blockieren.
+
+Befindet sich der Wechselrichter im Nachtmodus, versucht die Integration später automatisch erneut eine Verbindung aufzubauen und verbindet sich nach dem Aufwachen des Wechselrichters selbstständig.
 
 ## 📦 Installation
 
