@@ -2,12 +2,12 @@
   "domain": "sma_bt_native",
   "name": "SMA Sunny Boy Bluetooth Home Assistant Integration",
   "codeowners": [
-    "@shopsiamware"
+    "@MTTPoll"
   ],
   "config_flow": true,
-  "documentation": "https://github.com/shopsiamware/sma-sunny-boy-bluetooth-home-assistant-integration",
+  "documentation": "https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth",
+  "issue_tracker": "https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth/issues",
   "iot_class": "local_polling",
-  "issue_tracker": "https://github.com/shopsiamware/sma-sunny-boy-bluetooth-home-assistant-integration/issues",
   "requirements": [],
   "version": "1.0.1"
 }
