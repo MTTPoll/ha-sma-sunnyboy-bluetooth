@@ -2,8 +2,8 @@
 
 [![HACS Custom](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://hacs.xyz/)
 [![Home Assistant](https://img.shields.io/badge/Home%20Assistant-Custom%20Integration-41BDF5.svg)](https://www.home-assistant.io/)
-[![GitHub release](https://img.shields.io/github/v/release/mttpoll/ha-sma-sunnyboy-bluetooth?display_name=tag)](https://github.com/mttpoll/ha-sma-sunnyboy-bluetooth/releases)
-[![GitHub issues](https://img.shields.io/github/issues/mttpoll/ha-sma-sunnyboy-bluetooth)](https://github.com/mttpoll/ha-sma-sunnyboy-bluetooth/issues)
+[![GitHub release](https://img.shields.io/github/v/release/MTTPoll/ha-sma-sunnyboy-bluetooth?display_name=tag)](https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth/releases)
+[![GitHub issues](https://img.shields.io/github/issues/MTTPoll/ha-sma-sunnyboy-bluetooth)](https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth/issues)
 
 **SMA Sunny Boy Bluetooth Home Assistant Integration** is a Home Assistant custom integration for legacy **SMA Sunny Boy** and **SMA Sunny Tripower** inverters using native Bluetooth communication.
 
