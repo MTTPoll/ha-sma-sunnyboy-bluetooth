@@ -1,9 +1,7 @@
 {
   "domain": "sma_bt_native",
   "name": "SMA Sunny Boy Bluetooth Home Assistant Integration",
-  "codeowners": [
-    "@MTTPoll"
-  ],
+  "codeowners": ["@MTTPoll"],
   "config_flow": true,
   "documentation": "https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth",
   "issue_tracker": "https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth/issues",
