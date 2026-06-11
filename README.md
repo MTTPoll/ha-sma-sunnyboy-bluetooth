@@ -84,7 +84,7 @@ Please open an issue if you successfully test another model.
 5. Add this repository URL:
 
 ```text
-https://github.com/shopsiamware/ha-sma-sunnyboy-bluetooth
+https://github.com/mttpoll/ha-sma-sunnyboy-bluetooth
 ```
 
 6. Select category:
@@ -297,7 +297,7 @@ Bitte erstelle ein Issue, wenn du ein weiteres Modell erfolgreich getestet hast.
 5. Folgende Repository-Adresse eintragen:
 
 ```text
-https://github.com/shopsiamware/ha-sma-sunnyboy-bluetooth
+https://github.com/mttpoll/ha-sma-sunnyboy-bluetooth
 ```
 
 6. Kategorie auswählen:
