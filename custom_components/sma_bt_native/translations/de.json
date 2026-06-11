@@ -1,0 +1,37 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "SMA Sunny Boy Bluetooth Home Assistant Integration einrichten",
+        "description": "Gib die Bluetooth-Adresse deines älteren SMA Sunny Boy oder Sunny Tripower Wechselrichters ein. Beispiel: 00:80:25:16:38:CC. Standardintervalle: AC-Leistung 30 s, Tagesenergie 180 s, Gesamtenergie 180 s, Temperatur 60 s.",
+        "data": {
+          "bt_address": "Bluetooth-Adresse",
+          "password": "SMA Benutzer-Passwort",
+          "ac_interval": "AC-Leistung Intervall in Sekunden",
+          "energy_today_interval": "Tagesenergie Intervall in Sekunden",
+          "energy_total_interval": "Gesamtenergie Intervall in Sekunden",
+          "temperature_interval": "Temperatur Intervall in Sekunden"
+        }
+      }
+    },
+    "error": {
+      "invalid_bt_address": "Die Bluetooth-Adresse ist ungültig. Beispiel: 00:80:25:16:38:CC"
+    },
+    "abort": {
+      "already_configured": "Dieser SMA Bluetooth Wechselrichter ist bereits eingerichtet."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "title": "SMA Sunny Boy Bluetooth Optionen",
+        "data": {
+          "ac_interval": "AC-Leistung Intervall in Sekunden",
+          "energy_today_interval": "Tagesenergie Intervall in Sekunden",
+          "energy_total_interval": "Gesamtenergie Intervall in Sekunden",
+          "temperature_interval": "Temperatur Intervall in Sekunden"
+        }
+      }
+    }
+  }
+}

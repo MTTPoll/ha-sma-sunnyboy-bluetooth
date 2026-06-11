@@ -1,0 +1,19 @@
+DOMAIN = "sma_bt_native"
+
+CONF_BT_ADDRESS = "bt_address"
+CONF_PASSWORD = "password"
+CONF_AC_INTERVAL = "ac_interval"
+CONF_ENERGY_TODAY_INTERVAL = "energy_today_interval"
+CONF_ENERGY_TOTAL_INTERVAL = "energy_total_interval"
+CONF_TEMPERATURE_INTERVAL = "temperature_interval"
+
+DEFAULT_AC_INTERVAL = 30
+DEFAULT_ENERGY_TODAY_INTERVAL = 180
+DEFAULT_ENERGY_TOTAL_INTERVAL = 180
+DEFAULT_TEMPERATURE_INTERVAL = 60
+
+SENSOR_AC_POWER = "ac_power"
+SENSOR_ENERGY_TODAY = "energy_today"
+SENSOR_ENERGY_TOTAL = "energy_total"
+SENSOR_TEMPERATURE = "inverter_temperature"
+BINARY_SENSOR_CONNECTED = "connected"
