@@ -136,15 +136,17 @@ DEVICE_CLASSES = {
 
 
 def _decode_sw_version(raw: int) -> str | None:
-    if not raw or raw in (0xFFFFFFFF,):
+    if raw in (
+        0,
+        0xFFFFFFFF,
+        0xFFFFFFFE,
+        0xFFFFFEFE,
+        0xFEFFFFFE,
+    ):
         return None
 
-    for order in ("big", "little"):
-        b = raw.to_bytes(4, order)
-        if b[3] in (ord("N"), ord("R"), ord("S"), ord("B")):
-            return f"{b[0]:02d}.{b[1]:02d}.{b[2]:02d}.{chr(b[3])}"
-
-    return None
+    b = raw.to_bytes(4, "big")
+    return f"{b[0]:02d}.{b[1]:02d}.{b[2]:02d}.{b[3]:02d}"
 
 
 def _first_valid_numeric(values: list[int]) -> int | None:
