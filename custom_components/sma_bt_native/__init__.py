@@ -27,6 +27,8 @@ from .const import (
     SENSOR_AC_POWER,
     SENSOR_ENERGY_TODAY,
     SENSOR_ENERGY_TOTAL,
+    SENSOR_OPERATION_TIME,
+    SENSOR_FEED_IN_TIME,
     SENSOR_TEMPERATURE,
 )
 from .protocol import SMABluetoothClient
@@ -47,6 +49,8 @@ _READ_INTERVAL_KEYS = {
     SENSOR_AC_POWER: CONF_AC_INTERVAL,
     SENSOR_ENERGY_TODAY: CONF_ENERGY_TODAY_INTERVAL,
     SENSOR_ENERGY_TOTAL: CONF_ENERGY_TOTAL_INTERVAL,
+    SENSOR_OPERATION_TIME: CONF_ENERGY_TOTAL_INTERVAL,
+    SENSOR_FEED_IN_TIME: CONF_ENERGY_TOTAL_INTERVAL,
     SENSOR_TEMPERATURE: CONF_TEMPERATURE_INTERVAL,
 }
 _DEFAULT_INTERVALS = {
@@ -66,6 +70,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         SENSOR_AC_POWER: None,
         SENSOR_ENERGY_TODAY: None,
         SENSOR_ENERGY_TOTAL: None,
+        SENSOR_OPERATION_TIME: None,
+        SENSOR_FEED_IN_TIME: None,
         SENSOR_TEMPERATURE: None,
         BINARY_SENSOR_CONNECTED: False,
         DEVICE_INFO_KEY: {},
@@ -74,6 +80,8 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         SENSOR_AC_POWER: None,
         SENSOR_ENERGY_TODAY: None,
         SENSOR_ENERGY_TOTAL: None,
+        SENSOR_OPERATION_TIME: None,
+        SENSOR_FEED_IN_TIME: None,
         SENSOR_TEMPERATURE: None,
     }
     last_success: datetime | None = None
