@@ -32,6 +32,9 @@ SMA Sunny Boy Bluetooth Home Assistant Integration currently supports:
 * 🔍 Automatic inverter discovery
 * 🏷️ Automatic model detection
 * 🔢 Automatic serial number detection
+* 🏷️ Automatic firmware version detection
+* ⏱️ Inverter operation time
+* 🔌 Inverter feed-in time
 * 🌙 Sleep mode handling
 * 🔄 Automatic reconnect after sunrise
 * ⚡ Real-time AC power monitoring
@@ -42,6 +45,7 @@ SMA Sunny Boy Bluetooth Home Assistant Integration currently supports:
 * 📋 SMA Status sensor
 * ⚙️ Home Assistant Config Flow
 * 📦 HACS compatible
+
 
 ---
 
@@ -155,6 +159,7 @@ The integration will automatically detect:
 
 * Inverter model
 * Serial number
+* Firmware version
 * Bluetooth address
 
 ---
@@ -167,6 +172,8 @@ The integration will automatically detect:
 * Energy Today
 * Energy Total
 * Inverter Temperature
+* Operation Time
+* Feed-In Time
 * SMA Status
 
 ### Binary Sensors
@@ -197,6 +204,9 @@ Power: 3482 W
 Today: 18.6 kWh
 Total: 42851 kWh
 Temperature: 42.3 °C
+Operation Time: 68182 h
+Feed-In Time: 66427 h
+Firmware: 03.01.03.04
 Bluetooth: Connected
 ```
 
@@ -259,6 +269,9 @@ Die SMA Sunny Boy Bluetooth Home Assistant Integration unterstützt aktuell:
 * 🔍 Automatische Wechselrichter-Erkennung
 * 🏷️ Automatische Modellerkennung
 * 🔢 Automatische Seriennummer-Erkennung
+* 🏷️ Automatische Firmware-Erkennung
+* ⏱️ Betriebszeit des Wechselrichters
+* 🔌 Einspeisezeit des Wechselrichters
 * 🌙 Schlafmodus-Erkennung
 * 🔄 Automatische Wiederverbindung nach Sonnenaufgang
 * ⚡ AC-Leistung in Echtzeit
@@ -384,8 +397,8 @@ Die Integration erkennt automatisch:
 
 * Wechselrichter-Modell
 * Seriennummer
+* Firmware-Version
 * Bluetooth-Adresse
-
 ---
 
 ## 🧩 Verfügbare Entitäten
@@ -396,6 +409,8 @@ Die Integration erkennt automatisch:
 * Tagesertrag
 * Gesamtertrag
 * Wechselrichtertemperatur
+* Betriebszeit
+* Einspeisezeit
 * SMA Status
 
 ### Binärsensoren
@@ -424,6 +439,9 @@ Leistung: 3482 W
 Heute: 18,6 kWh
 Gesamt: 42851 kWh
 Temperatur: 42,3 °C
+Betriebszeit: 68182 h
+Einspeisezeit: 66427 h
+Firmware: 03.01.03.04
 Bluetooth: Verbunden
 ```
 
