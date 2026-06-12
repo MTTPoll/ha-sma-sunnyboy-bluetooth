@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
-from homeassistant.const import UnitOfEnergy, UnitOfPower, UnitOfTemperature
+from homeassistant.const import UnitOfEnergy, UnitOfPower, UnitOfTemperature, UnitOfTime
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -10,6 +10,8 @@ from .const import (
     SENSOR_AC_POWER,
     SENSOR_ENERGY_TODAY,
     SENSOR_ENERGY_TOTAL,
+    SENSOR_FEED_IN_TIME,
+    SENSOR_OPERATION_TIME,
     SENSOR_STATUS,
     SENSOR_TEMPERATURE,
 )
@@ -36,6 +38,20 @@ SENSORS = {
         "device_class": SensorDeviceClass.ENERGY,
         "state_class": SensorStateClass.TOTAL_INCREASING,
         "icon": None,
+    },
+    SENSOR_OPERATION_TIME: {
+        "name": "SMA Operation Time",
+        "unit": UnitOfTime.HOURS,
+        "device_class": SensorDeviceClass.DURATION,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+        "icon": "mdi:clock-outline",
+    },
+    SENSOR_FEED_IN_TIME: {
+        "name": "SMA Feed-In Time",
+        "unit": UnitOfTime.HOURS,
+        "device_class": SensorDeviceClass.DURATION,
+        "state_class": SensorStateClass.TOTAL_INCREASING,
+        "icon": "mdi:transmission-tower-export",
     },
     SENSOR_TEMPERATURE: {
         "name": "SMA Inverter Temperature",
