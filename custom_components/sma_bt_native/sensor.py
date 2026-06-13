@@ -13,6 +13,9 @@ from .const import (
     SENSOR_FEED_IN_TIME,
     SENSOR_OPERATION_TIME,
     SENSOR_BLUETOOTH_SIGNAL,
+    SENSOR_MPPT1_POWER,
+    SENSOR_MPPT2_POWER,
+    SENSOR_DC_TOTAL_POWER,
     SENSOR_STATUS,
     SENSOR_TEMPERATURE,
 )
@@ -67,6 +70,27 @@ SENSORS = {
         "device_class": SensorDeviceClass.TEMPERATURE,
         "state_class": SensorStateClass.MEASUREMENT,
         "icon": None,
+    },
+    SENSOR_MPPT1_POWER: {
+        "name": "SMA MPPT1 Power",
+        "unit": UnitOfPower.WATT,
+        "device_class": SensorDeviceClass.POWER,
+        "state_class": SensorStateClass.MEASUREMENT,
+        "icon": "mdi:solar-power",
+    },
+    SENSOR_MPPT2_POWER: {
+        "name": "SMA MPPT2 Power",
+        "unit": UnitOfPower.WATT,
+        "device_class": SensorDeviceClass.POWER,
+        "state_class": SensorStateClass.MEASUREMENT,
+        "icon": "mdi:solar-power",
+    },
+    SENSOR_DC_TOTAL_POWER: {
+        "name": "SMA DC Total Power",
+        "unit": UnitOfPower.WATT,
+        "device_class": SensorDeviceClass.POWER,
+        "state_class": SensorStateClass.MEASUREMENT,
+        "icon": "mdi:solar-panel",
     },
     SENSOR_STATUS: {
         "name": "SMA Status",
