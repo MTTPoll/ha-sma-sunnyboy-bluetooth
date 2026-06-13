@@ -9,7 +9,8 @@
 
 It connects directly to your inverter using SMA Bluetooth RFCOMM communication and does **not require SBFspot**, Sunny Explorer or any external software.
 
-> Currently tested with the **SMA Sunny Boy 4000TL-20**.
+> Currently tested with the **SMA Sunny Boy 4000TL-20** running firmware **03.01.03.04**.
+>
 > Other SMA Bluetooth inverters may also work.
 
 ---
@@ -38,14 +39,18 @@ SMA Sunny Boy Bluetooth Home Assistant Integration currently supports:
 * 🌙 Sleep mode handling
 * 🔄 Automatic reconnect after sunrise
 * ⚡ Real-time AC power monitoring
+* ⚡ MPPT1 Power monitoring
+* ⚡ MPPT2 Power monitoring
+* ⚡ DC Total Power monitoring
+* 📈 Inverter Efficiency monitoring
 * 🌡️ Inverter temperature monitoring
 * 📈 Daily energy production
 * 📊 Lifetime energy production
+* 📶 Bluetooth signal strength monitoring
 * 📡 Bluetooth connection monitoring
 * 📋 SMA Status sensor
 * ⚙️ Home Assistant Config Flow
 * 📦 HACS compatible
-
 
 ---
 
@@ -53,9 +58,9 @@ SMA Sunny Boy Bluetooth Home Assistant Integration currently supports:
 
 ### Confirmed working
 
-| Manufacturer | Model               | Status   |
-| ------------ | ------------------- | -------- |
-| SMA          | Sunny Boy 4000TL-20 | ✅ Tested |
+| Manufacturer | Model               | Firmware    | Status |
+| ------------ | ------------------- | ----------- | ------ |
+| SMA          | Sunny Boy 4000TL-20 | 03.01.03.04 | ✅ Tested |
 
 ### Likely compatible
 
@@ -91,6 +96,8 @@ As a result:
 
 If your inverter is sleeping (for example during nighttime), the integration will automatically retry later and reconnect when the inverter becomes available again.
 
+---
+
 ## 📦 Installation
 
 ### HACS Installation
@@ -102,7 +109,7 @@ If your inverter is sleeping (for example during nighttime), the integration wil
 5. Add this repository URL:
 
 ```text
-https://github.com/mttpoll/ha-sma-sunnyboy-bluetooth
+https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth
 ```
 
 6. Select category:
@@ -113,8 +120,6 @@ Integration
 
 7. Install **SMA Sunny Boy Bluetooth Home Assistant Integration**
 8. Restart Home Assistant
-
----
 
 ### Manual Installation
 
@@ -174,6 +179,11 @@ The integration will automatically detect:
 * Inverter Temperature
 * Operation Time
 * Feed-In Time
+* MPPT1 Power
+* MPPT2 Power
+* DC Total Power
+* Efficiency
+* Bluetooth Signal Strength
 * SMA Status
 
 ### Binary Sensors
@@ -183,8 +193,6 @@ The integration will automatically detect:
 ---
 
 ## 📋 SMA Status Sensor
-
-The SMA Status sensor provides a simple operational state:
 
 | State     | Description                         |
 | --------- | ----------------------------------- |
@@ -196,17 +204,29 @@ The SMA Status sensor provides a simple operational state:
 
 ## 🏡 Dashboard Example
 
-Example values:
-
 ```text
 Status: Producing
-Power: 3482 W
-Today: 18.6 kWh
-Total: 42851 kWh
+
+AC Power: 951 W
+
+MPPT1 Power: 625 W
+MPPT2 Power: 337 W
+DC Total Power: 962 W
+
+Efficiency: 98.86 %
+
+Energy Today: 18.6 kWh
+Energy Total: 42851 kWh
+
 Temperature: 42.3 °C
+
 Operation Time: 68182 h
 Feed-In Time: 66427 h
+
+Bluetooth Signal: 73.7 %
+
 Firmware: 03.01.03.04
+
 Bluetooth: Connected
 ```
 
@@ -216,12 +236,13 @@ Bluetooth: Connected
 
 Planned or possible future improvements:
 
-* Bluetooth signal strength sensor
+* Grid Frequency sensor
+* Grid Relay Status
 * Additional SMA model mappings
-* Firmware version detection improvements
 * Additional diagnostic entities
 * More tested inverter models
 * Improved translations
+* Additional firmware compatibility testing
 
 ---
 
@@ -237,14 +258,6 @@ You can help by:
 * Improving translations
 * Creating pull requests
 * Suggesting new features
-
-If you test another inverter model, please include:
-
-* Exact inverter model
-* Firmware version if available
-* Working entities
-* Non-working entities
-* Relevant Home Assistant logs
 
 ---
 
@@ -275,9 +288,14 @@ Die SMA Sunny Boy Bluetooth Home Assistant Integration unterstützt aktuell:
 * 🌙 Schlafmodus-Erkennung
 * 🔄 Automatische Wiederverbindung nach Sonnenaufgang
 * ⚡ AC-Leistung in Echtzeit
+* ⚡ MPPT1-Leistung
+* ⚡ MPPT2-Leistung
+* ⚡ DC-Gesamtleistung
+* 📈 Wirkungsgrad
 * 🌡️ Wechselrichtertemperatur
 * 📈 Tagesertrag
 * 📊 Gesamtertrag
+* 📶 Bluetooth-Signalstärke
 * 📡 Bluetooth-Verbindungsüberwachung
 * 📋 SMA Status Sensor
 * ⚙️ Home Assistant Config Flow
@@ -289,27 +307,9 @@ Die SMA Sunny Boy Bluetooth Home Assistant Integration unterstützt aktuell:
 
 ### Erfolgreich getestet
 
-| Hersteller | Modell              | Status     |
-| ---------- | ------------------- | ---------- |
-| SMA        | Sunny Boy 4000TL-20 | ✅ Getestet |
-
-### Wahrscheinlich kompatibel
-
-Diese Integration wurde für ältere SMA-Wechselrichter mit Bluetooth-Unterstützung entwickelt.
-
-Mögliche Kandidaten:
-
-* SMA Sunny Boy 1200
-* SMA Sunny Boy 1700
-* SMA Sunny Boy 2100
-* SMA Sunny Boy 3000TL-20
-* SMA Sunny Boy 3600TL-20
-* SMA Sunny Boy 5000TL-20
-* SMA Sunny Tripower Bluetooth Modelle
-
-Wenn dein Wechselrichter SMA Bluetooth RFCOMM verwendet, besteht eine gute Chance, dass er funktioniert.
-
-Bitte erstelle ein Issue, wenn du ein weiteres Modell erfolgreich getestet hast.
+| Hersteller | Modell | Firmware | Status |
+|------------|---------|----------|---------|
+| SMA | Sunny Boy 4000TL-20 | 03.01.03.04 | ✅ Getestet |
 
 ---
 
@@ -327,78 +327,41 @@ Dadurch kann es nach einem Neustart vorkommen, dass:
 
 Befindet sich der Wechselrichter im Nachtmodus, versucht die Integration später automatisch erneut eine Verbindung aufzubauen und verbindet sich nach dem Aufwachen des Wechselrichters selbstständig.
 
+---
+
 ## 📦 Installation
 
 ### Installation über HACS
 
-1. **HACS** öffnen
-2. Zu **Integrationen** wechseln
-3. Menü oben rechts öffnen
-4. **Benutzerdefinierte Repositories** auswählen
-5. Folgende Repository-Adresse eintragen:
+1. HACS öffnen
+2. Zu Integrationen wechseln
+3. Benutzerdefinierte Repositories auswählen
+4. Repository hinzufügen:
 
 ```text
-https://github.com/mttpoll/ha-sma-sunnyboy-bluetooth
+https://github.com/MTTPoll/ha-sma-sunnyboy-bluetooth
 ```
 
-6. Kategorie auswählen:
+5. Kategorie auswählen:
 
 ```text
 Integration
 ```
 
-7. **SMA Sunny Boy Bluetooth Home Assistant Integration** installieren
-8. Home Assistant neu starten
-
----
-
-### Manuelle Installation
-
-Diesen Ordner:
-
-```text
-custom_components/sma_bt_native
-```
-
-nach:
-
-```text
-config/custom_components/sma_bt_native
-```
-
-kopieren.
-
-Anschließend Home Assistant neu starten.
+6. Integration installieren
+7. Home Assistant neu starten
 
 ---
 
 ## ⚙️ Einrichtung
 
-Nach der Installation:
-
-1. Home Assistant öffnen
-2. Zu folgendem Menü wechseln:
-
-```text
-Einstellungen → Geräte & Dienste → Integration hinzufügen
-```
-
-3. Nach folgender Integration suchen:
-
-```text
-SMA Sunny Boy Bluetooth Home Assistant Integration
-```
-
-4. Bluetooth-MAC-Adresse des Wechselrichters eingeben
-5. SMA-Benutzerpasswort eingeben
+1. Einstellungen → Geräte & Dienste
+2. Integration hinzufügen
+3. SMA Sunny Boy Bluetooth Home Assistant Integration auswählen
+4. Bluetooth-MAC-Adresse eingeben
+5. SMA-Passwort eingeben
 6. Einrichtung abschließen
 
-Die Integration erkennt automatisch:
-
-* Wechselrichter-Modell
-* Seriennummer
-* Firmware-Version
-* Bluetooth-Adresse
 ---
 
 ## 🧩 Verfügbare Entitäten
@@ -411,6 +374,11 @@ Die Integration erkennt automatisch:
 * Wechselrichtertemperatur
 * Betriebszeit
 * Einspeisezeit
+* MPPT1-Leistung
+* MPPT2-Leistung
+* DC-Gesamtleistung
+* Wirkungsgrad
+* Bluetooth-Signalstärke
 * SMA Status
 
 ### Binärsensoren
@@ -421,13 +389,11 @@ Die Integration erkennt automatisch:
 
 ## 📋 SMA Status Sensor
 
-Der SMA Status Sensor liefert den aktuellen Betriebszustand:
-
-| Status    | Beschreibung                               |
-| --------- | ------------------------------------------ |
-| Producing | Wechselrichter produziert Energie          |
-| Sleeping  | Wechselrichter befindet sich im Nachtmodus |
-| Offline   | Bluetooth-Kommunikation nicht verfügbar    |
+| Status | Beschreibung |
+|---------|-------------|
+| Producing | Wechselrichter produziert Energie |
+| Sleeping | Nachtmodus |
+| Offline | Keine Bluetooth-Verbindung |
 
 ---
 
@@ -435,13 +401,27 @@ Der SMA Status Sensor liefert den aktuellen Betriebszustand:
 
 ```text
 Status: Producing
-Leistung: 3482 W
-Heute: 18,6 kWh
-Gesamt: 42851 kWh
+
+AC-Leistung: 951 W
+
+MPPT1-Leistung: 625 W
+MPPT2-Leistung: 337 W
+DC-Gesamtleistung: 962 W
+
+Wirkungsgrad: 98.86 %
+
+Tagesertrag: 18,6 kWh
+Gesamtertrag: 42851 kWh
+
 Temperatur: 42,3 °C
+
 Betriebszeit: 68182 h
 Einspeisezeit: 66427 h
+
+Bluetooth-Signal: 73.7 %
+
 Firmware: 03.01.03.04
+
 Bluetooth: Verbunden
 ```
 
@@ -449,11 +429,11 @@ Bluetooth: Verbunden
 
 ## 🛣️ Roadmap
 
-Geplante oder mögliche Erweiterungen:
+Geplante Erweiterungen:
 
-* Bluetooth-Signalstärke
+* Netzfrequenz-Sensor
+* Netzrelais-Status
 * Weitere SMA-Modell-Erkennung
-* Verbesserte Firmware-Erkennung
 * Zusätzliche Diagnose-Entitäten
 * Weitere getestete Wechselrichter
 * Verbesserte Übersetzungen
@@ -472,14 +452,6 @@ Du kannst helfen durch:
 * Verbesserung von Übersetzungen
 * Pull Requests
 * Feature-Wünsche
-
-Wenn du ein weiteres Modell testest, gib bitte möglichst an:
-
-* Exaktes Wechselrichter-Modell
-* Firmware-Version (falls verfügbar)
-* Funktionierende Entitäten
-* Nicht funktionierende Entitäten
-* Relevante Home-Assistant-Logs
 
 ---
 
