@@ -17,6 +17,7 @@ from .const import (
     SENSOR_MPPT2_POWER,
     SENSOR_DC_TOTAL_POWER,
     SENSOR_STATUS,
+    SENSOR_EFFICIENCY,
     SENSOR_TEMPERATURE,
 )
 from .device import get_device_info
@@ -98,6 +99,13 @@ SENSORS = {
         "device_class": None,
         "state_class": None,
         "icon": "mdi:solar-power-variant",
+    },
+    SENSOR_EFFICIENCY: {
+        "name": "SMA Efficiency",
+        "unit": PERCENTAGE,
+        "device_class": None,
+        "state_class": SensorStateClass.MEASUREMENT,
+        "icon": "mdi:percent",
     },
 }
 
