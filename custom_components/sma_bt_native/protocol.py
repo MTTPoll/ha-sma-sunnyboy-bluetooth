@@ -73,6 +73,11 @@ def make_ppp(payload):
 
 def unescape_ppp(raw):
     if not raw or raw[0] != 0x7E:
+        _LOGGER.debug(
+            "PPP invalid frame len=%s data=%s",
+            len(raw),
+            raw[:64].hex() if raw else "",
+        )
         raise SMAError("Invalid PPP frame")
 
     raw = bytearray(raw[1:-1])
@@ -242,7 +247,16 @@ class SMABluetoothClient:
     def _recv(self, size=4096):
         if not self.sock:
             raise SMAError("Socket not connected")
-        return bytearray(self.sock.recv(size))
+
+        data = bytearray(self.sock.recv(size))
+
+        _LOGGER.debug(
+            "RFCOMM recv len=%s first=%s",
+            len(data),
+            data[:32].hex(),
+        )
+
+        return data
 
     def _send_outer(self, src, dst, typ, payload):
         if not self.sock:
@@ -254,7 +268,15 @@ class SMABluetoothClient:
         self.sock.send(bytes(pkt))
 
     def _decode_6560(self, pkt):
-        ppp = unescape_ppp(bytearray(pkt[18:]))
+        ppp_raw = bytearray(pkt[18:])
+
+        _LOGGER.debug(
+            "PPP candidate len=%s data=%s",
+            len(ppp_raw),
+            ppp_raw.hex(),
+        )
+
+        ppp = unescape_ppp(ppp_raw)
         data = ppp[4:-2]
 
         tag_raw = u16(data[22:24])
@@ -405,6 +427,7 @@ class SMABluetoothClient:
 
         try:
             # 0x00821E00: NameplateLocation / device name.
+            self._ensure_session()
             self._request_nameplate_record(0x00821E00)
         except Exception as err:
             _LOGGER.debug("Could not read SMA NameplateLocation: %s", err)
@@ -412,6 +435,7 @@ class SMABluetoothClient:
 
         try:
             # 0x00821F00: NameplateMainModel / device class.
+            self._ensure_session()
             record = self._request_nameplate_record(0x00821F00)
             if record:
                 _rec_lri, _ts, values32, values16, _payload = record
@@ -430,6 +454,7 @@ class SMABluetoothClient:
 
         try:
             # 0x00822000: NameplateModel / device type.
+            self._ensure_session()
             record = self._request_nameplate_record(0x00822000)
             if record:
                 _rec_lri, _ts, values32, values16, _payload = record
@@ -460,6 +485,7 @@ class SMABluetoothClient:
             self._close()
 
         try:
+            self._ensure_session()
             records = self._request(0x5800, 0x00823400, 0x008234FF)
             _LOGGER.debug("SMA Software raw records: %s", records)
 
@@ -651,6 +677,11 @@ class SMABluetoothClient:
                     )
                     self._close()
 
+            # Close the RFCOMM/PPP session after every successful read cycle.
+            # Older SMA Bluetooth inverters can leave trailing bytes in the socket
+            # buffer; reconnecting on the next cycle avoids reading stale data as
+            # a new PPP frame.
+            self._close()
             return values
 
         except Exception:
@@ -666,11 +697,8 @@ def parse_records(extra):
     if not extra:
         return []
 
-    # Special handling for SpotDCPower records from older SMA Bluetooth
-    # inverters such as SB4000TL-20. They can return a 45-byte payload
-    # containing two MPPT power records that do not match the standard
-    # 16/28/40-byte record layouts.
-    if len(extra) == 45:
+
+    if b"\x01\x1e\x25\x40" in extra or b"\x02\x1e\x25\x40" in extra:
         records = []
         pos = 0
 
