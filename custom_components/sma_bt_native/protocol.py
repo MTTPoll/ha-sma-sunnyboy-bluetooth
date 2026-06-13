@@ -9,6 +9,9 @@ from .const import (
     SENSOR_ENERGY_TODAY,
     SENSOR_ENERGY_TOTAL,
     SENSOR_TEMPERATURE,
+    SENSOR_OPERATION_TIME,
+    SENSOR_FEED_IN_TIME,
+    SENSOR_BLUETOOTH_SIGNAL,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -473,6 +476,30 @@ class SMABluetoothClient:
 
         return info
 
+    def read_bt_signal(self):
+        """Read SMA Bluetooth signal strength in percent.
+
+        SBFspot requests this with a Bluetooth management frame:
+        type 0x03, payload 0x05 0x00.
+        The response signal byte is at packet offset 22 and is scaled to percent.
+        """
+
+        self._ensure_session()
+
+        self._send_outer(
+            "00:00:00:00:00:00",
+            self.bt_address,
+            0x03,
+            bytes([0x05, 0x00]),
+        )
+
+        pkt = self._recv(512)
+
+        if len(pkt) < 23:
+            raise SMAError("Bluetooth signal response too short")
+
+        return round(pkt[22] * 100.0 / 255.0, 1)
+
     def read_values(self, sensors=None):
         wanted = set(
             sensors
@@ -481,12 +508,18 @@ class SMABluetoothClient:
                 SENSOR_ENERGY_TODAY,
                 SENSOR_ENERGY_TOTAL,
                 SENSOR_TEMPERATURE,
+                SENSOR_OPERATION_TIME,
+                SENSOR_FEED_IN_TIME,
+                SENSOR_BLUETOOTH_SIGNAL,
             )
         )
 
         try:
             self._ensure_session()
             values = {sensor: None for sensor in wanted}
+
+            if SENSOR_BLUETOOTH_SIGNAL in wanted:
+                values[SENSOR_BLUETOOTH_SIGNAL] = self.read_bt_signal()
 
             if SENSOR_ENERGY_TOTAL in wanted or SENSOR_ENERGY_TODAY in wanted:
                 for code, lri, cls, ts, vals in self._request(
@@ -502,6 +535,29 @@ class SMABluetoothClient:
                         raw = vals[0]
                         if is_valid_sma_value(raw):
                             values[SENSOR_ENERGY_TODAY] = round(raw / 1000, 3)
+
+            if (
+                SENSOR_OPERATION_TIME in wanted
+                or SENSOR_FEED_IN_TIME in wanted
+            ):
+                for code, lri, cls, ts, vals in self._request(
+                    0x5400,
+                    0x00462E00,
+                    0x00462FFF,
+                ):
+                    if not vals:
+                        continue
+
+                    raw = vals[0]
+
+                    if not is_valid_sma_value(raw):
+                        continue
+
+                    if lri == 0x00462E00 and SENSOR_OPERATION_TIME in wanted:
+                        values[SENSOR_OPERATION_TIME] = round(raw / 3600, 2)
+
+                    elif lri == 0x00462F00 and SENSOR_FEED_IN_TIME in wanted:
+                        values[SENSOR_FEED_IN_TIME] = round(raw / 3600, 2)
 
             if SENSOR_AC_POWER in wanted:
                 for code, lri, cls, ts, vals in self._request(
