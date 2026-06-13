@@ -12,6 +12,9 @@ from .const import (
     SENSOR_OPERATION_TIME,
     SENSOR_FEED_IN_TIME,
     SENSOR_BLUETOOTH_SIGNAL,
+    SENSOR_MPPT1_POWER,
+    SENSOR_MPPT2_POWER,
+    SENSOR_DC_TOTAL_POWER,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -511,6 +514,9 @@ class SMABluetoothClient:
                 SENSOR_OPERATION_TIME,
                 SENSOR_FEED_IN_TIME,
                 SENSOR_BLUETOOTH_SIGNAL,
+                SENSOR_MPPT1_POWER,
+                SENSOR_MPPT2_POWER,
+                SENSOR_DC_TOTAL_POWER,
             )
         )
 
@@ -584,6 +590,67 @@ class SMABluetoothClient:
                 except SMAError:
                     pass
 
+
+            if (
+                SENSOR_MPPT1_POWER in wanted
+                or SENSOR_MPPT2_POWER in wanted
+                or SENSOR_DC_TOTAL_POWER in wanted
+            ):
+                # SBFspot uses command 0x53800200 for SpotDCPower. The helper
+                # _request() receives only the subtype part, so this is 0x5380.
+                # On older SMA Bluetooth inverters, both MPPT values can be
+                # returned in one non-standard 45-byte payload. parse_records()
+                # handles that special format below.
+                try:
+                    dc_total = 0
+                    have_dc_value = False
+
+                    for code, lri, cls, ts, vals in self._request(
+                        0x5380,
+                        0x00251E00,
+                        0x00251EFF,
+                    ):
+                        if lri != 0x00251E00 or not vals:
+                            continue
+
+                        raw = vals[2] if len(vals) >= 3 else vals[0]
+
+                        _LOGGER.debug(
+                            "SMA MPPT DC power record code=%08x lri=%08x cls=%s vals=%s raw=%s",
+                            code,
+                            lri,
+                            cls,
+                            vals,
+                            raw,
+                        )
+
+                        if not is_valid_sma_value(raw):
+                            continue
+
+                        raw = int(raw)
+
+                        if cls == 1:
+                            if SENSOR_MPPT1_POWER in wanted:
+                                values[SENSOR_MPPT1_POWER] = raw
+                            dc_total += raw
+                            have_dc_value = True
+
+                        elif cls == 2:
+                            if SENSOR_MPPT2_POWER in wanted:
+                                values[SENSOR_MPPT2_POWER] = raw
+                            dc_total += raw
+                            have_dc_value = True
+
+                    if have_dc_value and SENSOR_DC_TOTAL_POWER in wanted:
+                        values[SENSOR_DC_TOTAL_POWER] = dc_total
+
+                except Exception as err:
+                    _LOGGER.info(
+                        "SMA optional MPPT DC power read failed; keeping existing values unavailable: %s",
+                        err,
+                    )
+                    self._close()
+
             return values
 
         except Exception:
@@ -598,6 +665,40 @@ def parse_records(extra):
     extra = bytearray(extra)
     if not extra:
         return []
+
+    # Special handling for SpotDCPower records from older SMA Bluetooth
+    # inverters such as SB4000TL-20. They can return a 45-byte payload
+    # containing two MPPT power records that do not match the standard
+    # 16/28/40-byte record layouts.
+    if len(extra) == 45:
+        records = []
+        pos = 0
+
+        while pos + 12 <= len(extra):
+            code = u32(extra[pos : pos + 4])
+
+            if (code & 0x00FFFF00) != 0x00251E00:
+                pos += 1
+                continue
+
+            cls = code & 0xFF
+            if cls not in (1, 2, 3, 4):
+                pos += 1
+                continue
+
+            ts = u32(extra[pos + 4 : pos + 8])
+            value = u32(extra[pos + 8 : pos + 12])
+
+            records.append((code, 0x00251E00, cls, ts, [value]))
+
+            # In the observed SB4000TL-20 payload, each MPPT block starts 28
+            # bytes after the previous block. If the next block is shorter,
+            # the loop still reads its first value safely.
+            pos += 28
+
+        if records:
+            _LOGGER.debug("MPPT SPECIAL PARSER records=%s", records)
+            return records
 
     for size in (16, 28, 40):
         if len(extra) >= size and len(extra) % size == 0:
