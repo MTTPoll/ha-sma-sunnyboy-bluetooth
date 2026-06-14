@@ -39,6 +39,7 @@ from .const import (
     SENSOR_DC_TOTAL_POWER,
     SENSOR_EFFICIENCY,
     SENSOR_TEMPERATURE,
+    SENSOR_GRID_FREQUENCY,
 )
 from .protocol import SMABluetoothClient
 from .bluetooth import extract_serial_from_name, read_device_name
@@ -65,6 +66,7 @@ _READ_INTERVAL_KEYS = {
     SENSOR_MPPT1_POWER: CONF_MPPT_INTERVAL,
     SENSOR_MPPT2_POWER: CONF_MPPT_INTERVAL,
     SENSOR_DC_TOTAL_POWER: CONF_MPPT_INTERVAL,
+    SENSOR_GRID_FREQUENCY: CONF_AC_INTERVAL,
 }
 
 _DEFAULT_INTERVALS = {
@@ -93,6 +95,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         SENSOR_MPPT1_POWER: None,
         SENSOR_MPPT2_POWER: None,
         SENSOR_DC_TOTAL_POWER: None,
+        SENSOR_GRID_FREQUENCY: None,
         SENSOR_EFFICIENCY: None,
         BINARY_SENSOR_CONNECTED: False,
         DEVICE_INFO_KEY: {},
@@ -109,6 +112,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         SENSOR_MPPT1_POWER: None,
         SENSOR_MPPT2_POWER: None,
         SENSOR_DC_TOTAL_POWER: None,
+        SENSOR_GRID_FREQUENCY: None,
     }
 
     last_success: datetime | None = None
