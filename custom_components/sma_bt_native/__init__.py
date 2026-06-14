@@ -124,8 +124,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
     )
 
     device_info_loaded = False
-    last_device_info_attempt: datetime | None = None
-    device_info_retry = timedelta(minutes=30)
 
     async def _update_ha_device_registry(info: dict[str, Any]) -> None:
         """Push dynamic device metadata into Home Assistant's device registry."""
@@ -152,6 +150,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.debug("Could not update SMA device registry metadata: %s", err)
 
     async def _read_and_cache_device_info() -> None:
+        """Read static device information once during startup."""
         nonlocal device_info_loaded
 
         if device_info_loaded:
@@ -161,10 +160,13 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
         try:
             bt_name = await hass.async_add_executor_job(read_device_name, bt_address)
-        except Exception:
+        except Exception as err:
+            _LOGGER.debug("Could not read SMA Bluetooth device name: %s", err)
             bt_name = None
 
         serial = extract_serial_from_name(bt_name)
+        proto_info = None
+        device_client: SMABluetoothClient | None = None
 
         try:
             device_client = SMABluetoothClient(
@@ -177,13 +179,15 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
                 device_client.read_device_info
             )
 
-            await hass.async_add_executor_job(
-                device_client.close
-            )
-
         except Exception as err:
             _LOGGER.debug("SMA protocol device info read failed: %s", err)
-            proto_info = None
+
+        finally:
+            if device_client is not None:
+                try:
+                    await hass.async_add_executor_job(device_client.close)
+                except Exception as close_err:
+                    _LOGGER.debug("Could not close SMA device-info client: %s", close_err)
 
         info: dict[str, Any] = {}
 
@@ -207,7 +211,7 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             _LOGGER.info("SMA device info: %s", cache[DEVICE_INFO_KEY])
 
     async def async_update_data():
-        nonlocal last_success, sleep_retry_after, last_device_info_attempt
+        nonlocal last_success, sleep_retry_after
 
         now = datetime.utcnow()
 
@@ -232,13 +236,17 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             def _read_sma():
                 return client.read_values(wanted)
 
+            _LOGGER.debug(
+                "SMA wanted sensors: %s",
+                wanted,
+            )
+
             values = await hass.async_add_executor_job(_read_sma)
 
             for key, value in values.items():
                 cache[key] = value
                 last_update[key] = now
 
-            # Calculate efficiency from existing AC/DC power values
             ac_power = cache.get(SENSOR_AC_POWER)
             dc_total_power = cache.get(SENSOR_DC_TOTAL_POWER)
 
@@ -255,25 +263,6 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
             last_success = now
             sleep_retry_after = None
             cache[BINARY_SENSOR_CONNECTED] = True
-
-            should_try_device_info = (
-                not device_info_loaded
-                and (
-                    last_device_info_attempt is None
-                    or now - last_device_info_attempt >= device_info_retry
-                )
-            )
-
-            if should_try_device_info:
-                last_device_info_attempt = now
-                try:
-                    await asyncio.sleep(10)
-                    await _read_and_cache_device_info()
-                except Exception as info_err:
-                    _LOGGER.debug(
-                        "SMA optional device-info update failed: %s",
-                        info_err,
-                    )
 
             return cache
 
@@ -328,22 +317,41 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
 
     await hass.config_entries.async_forward_entry_setups(entry, PLATFORMS)
 
-    async def _refresh_after_ha_started() -> None:
+    async def _startup_sequence() -> None:
         if entry.entry_id not in hass.data.get(DOMAIN, {}):
             return
 
-        await asyncio.sleep(30)
+        await asyncio.sleep(10)
 
         if entry.entry_id not in hass.data.get(DOMAIN, {}):
             return
+
+        for attempt in range(3):
+            await _read_and_cache_device_info()
+            coordinator.async_set_updated_data(cache)
+
+            if device_info_loaded:
+                break
+
+            _LOGGER.debug(
+                "SMA device info not complete yet, retrying startup read (%s/3)",
+                attempt + 1,
+            )
+
+            await asyncio.sleep(15)
+
+        if entry.entry_id not in hass.data.get(DOMAIN, {}):
+            return
+
+        await asyncio.sleep(10)
 
         await coordinator.async_request_refresh()
 
     if hass.state == CoreState.running:
-        hass.async_create_task(_refresh_after_ha_started())
+        hass.async_create_task(_startup_sequence())
     else:
         async def _on_ha_started(event) -> None:
-            hass.async_create_task(_refresh_after_ha_started())
+            hass.async_create_task(_startup_sequence())
 
         hass.bus.async_listen_once(EVENT_HOMEASSISTANT_STARTED, _on_ha_started)
 
