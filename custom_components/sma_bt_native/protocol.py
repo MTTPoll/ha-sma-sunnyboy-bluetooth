@@ -529,6 +529,40 @@ class SMABluetoothClient:
 
         return round(pkt[22] * 100.0 / 255.0, 1)
 
+    def _drain_stale_rfcomm(self) -> None:
+        """Discard stale RFCOMM bytes left in the socket from a previous poll."""
+        if not self.sock:
+            return
+
+        old_timeout = self.sock.gettimeout()
+
+        try:
+            self.sock.settimeout(0.02)
+
+            while True:
+                data = self.sock.recv(4096)
+
+                if not data:
+                    break
+
+                _LOGGER.debug(
+                    "Drained stale RFCOMM bytes before request: len=%s data=%s",
+                    len(data),
+                    data.hex(),
+                )
+
+        except socket.timeout:
+            pass
+
+        except Exception as err:
+            _LOGGER.debug("Could not drain stale RFCOMM bytes: %s", err)
+
+        finally:
+            try:
+                self.sock.settimeout(old_timeout)
+            except Exception:
+                pass
+
     def read_values(self, sensors=None):
         wanted = set(
             sensors
@@ -547,7 +581,13 @@ class SMABluetoothClient:
         )
 
         try:
+            had_session = self.sock is not None and self._logged_in
+
             self._ensure_session()
+
+            if had_session:
+                self._drain_stale_rfcomm()
+
             values = {sensor: None for sensor in wanted}
 
             if SENSOR_BLUETOOTH_SIGNAL in wanted:
@@ -684,11 +724,8 @@ class SMABluetoothClient:
                     )
                     self._close()
 
-            # Close the RFCOMM/PPP session after every successful read cycle.
-            # Older SMA Bluetooth inverters can leave trailing bytes in the socket
-            # buffer; reconnecting on the next cycle avoids reading stale data as
-            # a new PPP frame.
-            self._close()
+            # Keep the RFCOMM/PPP session open for testing.
+            # Stale bytes are drained at the beginning of the next poll.
             return values
 
         except Exception:
