@@ -553,17 +553,24 @@ class SMABluetoothClient:
             if SENSOR_BLUETOOTH_SIGNAL in wanted:
                 values[SENSOR_BLUETOOTH_SIGNAL] = self.read_bt_signal()
 
-            if SENSOR_ENERGY_TOTAL in wanted or SENSOR_ENERGY_TODAY in wanted:
+            if SENSOR_ENERGY_TOTAL in wanted:
                 for code, lri, cls, ts, vals in self._request(
                     0x5400,
                     0x00260100,
-                    0x002622FF,
+                    0x002601FF,
                 ):
-                    if lri == 0x00260100 and vals and SENSOR_ENERGY_TOTAL in wanted:
+                    if lri == 0x00260100 and vals:
                         raw = vals[0]
                         if is_valid_sma_value(raw):
                             values[SENSOR_ENERGY_TOTAL] = round(raw / 1000, 3)
-                    elif lri == 0x00262200 and vals and SENSOR_ENERGY_TODAY in wanted:
+
+            if SENSOR_ENERGY_TODAY in wanted:
+                for code, lri, cls, ts, vals in self._request(
+                    0x5400,
+                    0x00262200,
+                    0x002622FF,
+                ):
+                    if lri == 0x00262200 and vals:
                         raw = vals[0]
                         if is_valid_sma_value(raw):
                             values[SENSOR_ENERGY_TODAY] = round(raw / 1000, 3)
