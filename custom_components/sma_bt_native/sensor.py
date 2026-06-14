@@ -1,7 +1,7 @@
 from __future__ import annotations
 
 from homeassistant.components.sensor import SensorDeviceClass, SensorEntity, SensorStateClass
-from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTemperature, UnitOfTime
+from homeassistant.const import PERCENTAGE, UnitOfEnergy, UnitOfPower, UnitOfTemperature, UnitOfTime, UnitOfFrequency
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -19,6 +19,7 @@ from .const import (
     SENSOR_STATUS,
     SENSOR_EFFICIENCY,
     SENSOR_TEMPERATURE,
+    SENSOR_GRID_FREQUENCY,
 )
 from .device import get_device_info
 
@@ -92,6 +93,14 @@ SENSORS = {
         "device_class": SensorDeviceClass.POWER,
         "state_class": SensorStateClass.MEASUREMENT,
         "icon": "mdi:solar-panel",
+    },
+
+    SENSOR_GRID_FREQUENCY: {
+        "name": "SMA Grid Frequency",
+        "unit": UnitOfFrequency.HERTZ,
+        "device_class": SensorDeviceClass.FREQUENCY,
+        "state_class": SensorStateClass.MEASUREMENT,
+        "icon": "mdi:sine-wave",
     },
     SENSOR_STATUS: {
         "name": "SMA Status",
