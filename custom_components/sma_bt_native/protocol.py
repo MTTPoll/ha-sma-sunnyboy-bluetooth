@@ -15,6 +15,7 @@ from .const import (
     SENSOR_MPPT1_POWER,
     SENSOR_MPPT2_POWER,
     SENSOR_DC_TOTAL_POWER,
+    SENSOR_GRID_FREQUENCY,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -577,6 +578,7 @@ class SMABluetoothClient:
                 SENSOR_MPPT1_POWER,
                 SENSOR_MPPT2_POWER,
                 SENSOR_DC_TOTAL_POWER,
+                SENSOR_GRID_FREQUENCY,
             )
         )
 
@@ -637,6 +639,18 @@ class SMABluetoothClient:
 
                     elif lri == 0x00462F00 and SENSOR_FEED_IN_TIME in wanted:
                         values[SENSOR_FEED_IN_TIME] = round(raw / 3600, 2)
+
+
+            if SENSOR_GRID_FREQUENCY in wanted:
+                for code, lri, cls, ts, vals in self._request(
+                    0x5100,
+                    0x00465700,
+                    0x004657FF,
+                ):
+                    if lri == 0x00465700 and vals:
+                        raw = vals[0]
+                        if is_valid_sma_value(raw):
+                            values[SENSOR_GRID_FREQUENCY] = round(raw / 100, 2)
 
             if SENSOR_AC_POWER in wanted:
                 for code, lri, cls, ts, vals in self._request(
