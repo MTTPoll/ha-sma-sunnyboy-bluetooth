@@ -245,15 +245,76 @@ class SMABluetoothClient:
         self._login()
         self._logged_in = True
 
-    def _recv(self, size=4096):
+    def _recv_exact(self, size: int) -> bytearray:
+        """Read exactly size bytes from the RFCOMM stream.
+
+        RFCOMM is a stream socket. A single sock.recv(size) may return fewer
+        bytes than requested even though the rest of the SMA frame follows
+        immediately afterwards. Reading the exact SMA outer-frame length avoids
+        leaving trailing bytes in the socket after larger or unusual responses
+        such as MPPT/DC power.
+        """
         if not self.sock:
             raise SMAError("Socket not connected")
 
-        data = bytearray(self.sock.recv(size))
+        data = bytearray()
+
+        while len(data) < size:
+            chunk = self.sock.recv(size - len(data))
+
+            if not chunk:
+                raise SMAError(
+                    f"Socket closed while reading RFCOMM data "
+                    f"({len(data)}/{size} bytes received)"
+                )
+
+            data.extend(chunk)
+
+        return data
+
+    def _recv(self, size=4096):
+        """Read one complete SMA outer frame from the RFCOMM stream.
+
+        The size argument is kept for compatibility with the older call sites,
+        but the actual read length is taken from the SMA outer-frame header.
+        """
+        if not self.sock:
+            raise SMAError("Socket not connected")
+
+        header = self._recv_exact(4)
+
+        if header[0] != 0x7E:
+            _LOGGER.debug(
+                "Invalid SMA outer frame header len=%s data=%s",
+                len(header),
+                header.hex(),
+            )
+            raise SMAError("Invalid SMA outer frame header")
+
+        pktlen = header[1] | (header[2] << 8)
+
+        if pktlen < 18:
+            _LOGGER.debug(
+                "Invalid SMA outer frame length=%s header=%s",
+                pktlen,
+                header.hex(),
+            )
+            raise SMAError(f"Invalid SMA outer frame length: {pktlen}")
+
+        if pktlen > size:
+            _LOGGER.debug(
+                "SMA outer frame length=%s exceeds legacy recv size=%s",
+                pktlen,
+                size,
+            )
+
+        body = self._recv_exact(pktlen - 4)
+        data = header + body
 
         _LOGGER.debug(
-            "RFCOMM recv len=%s first=%s",
+            "RFCOMM frame recv len=%s expected=%s first=%s",
             len(data),
+            pktlen,
             data[:32].hex(),
         )
 
@@ -371,13 +432,109 @@ class SMABluetoothClient:
         tag = self._next_tag()
         self._send_6560(tag, 0x0200, subtype, first, last)
 
-        resp = self._decode_6560(self._recv(4096))
+        is_mppt_dc_power = (
+            subtype == 0x5380
+            and first == 0x00251E00
+            and last == 0x00251EFF
+        )
+
+        pkt = self._recv(4096)
+
+        if is_mppt_dc_power:
+            pkt = self._complete_mppt_ppp_packet(pkt)
+
+        resp = self._decode_6560(pkt)
         if resp.error:
             raise SMAError(
                 f"Request {first:08x}-{last:08x} failed with SMA error 0x{resp.error:x}"
             )
 
+        if is_mppt_dc_power:
+            _LOGGER.debug(
+                "MPPT combined response tag=%s pktcount=%s subtype=%04x "
+                "arg1=%08x arg2=%08x extra_len=%s extra=%s",
+                resp.tag,
+                resp.pktcount,
+                resp.subtype,
+                resp.arg1,
+                resp.arg2,
+                len(resp.extra),
+                resp.extra.hex(),
+            )
+
         return resp.extra
+
+    def _complete_mppt_ppp_packet(self, pkt: bytearray) -> bytearray:
+        """Read and append the SB4000TL-20 MPPT PPP continuation fragment.
+
+        The SB4000TL-20 can split the SpotDCPower/MPPT PPP frame over two
+        SMA outer RFCOMM frames. The first outer frame contains the beginning
+        of the PPP frame, but the PPP payload does not end with 0x7E. The
+        following short outer frame contains the remaining PPP bytes and the
+        final 0x7E. Decode must therefore happen after both RFCOMM frames have
+        been joined at the PPP-payload level.
+        """
+        if len(pkt) <= 18:
+            return pkt
+
+        ppp_raw = bytearray(pkt[18:])
+
+        if not ppp_raw:
+            return pkt
+
+        if ppp_raw[-1] == 0x7E:
+            _LOGGER.debug(
+                "MPPT PPP frame complete in first RFCOMM frame: ppp_len=%s",
+                len(ppp_raw),
+            )
+            return pkt
+
+        if not self.sock:
+            return pkt
+
+        old_timeout = self.sock.gettimeout()
+
+        try:
+            self.sock.settimeout(0.12)
+            followup = self._recv(512)
+        except socket.timeout:
+            _LOGGER.debug(
+                "MPPT PPP continuation missing: primary_ppp_len=%s primary_ppp=%s",
+                len(ppp_raw),
+                ppp_raw.hex(),
+            )
+            return pkt
+        except Exception as err:
+            _LOGGER.debug("MPPT PPP continuation read failed: %s", err)
+            return pkt
+        finally:
+            try:
+                self.sock.settimeout(old_timeout)
+            except Exception:
+                pass
+
+        followup_ppp = bytearray(followup[18:]) if len(followup) > 18 else bytearray()
+
+        _LOGGER.debug(
+            "MPPT PPP continuation frame len=%s ppp_len=%s data=%s",
+            len(followup),
+            len(followup_ppp),
+            followup.hex(),
+        )
+
+        combined_ppp = ppp_raw + followup_ppp
+
+        _LOGGER.debug(
+            "MPPT PPP combined len=%s primary_len=%s continuation_len=%s endswith_7e=%s",
+            len(combined_ppp),
+            len(ppp_raw),
+            len(followup_ppp),
+            combined_ppp[-1] == 0x7E if combined_ppp else False,
+        )
+
+        # _decode_6560 only uses pkt[18:], so the original outer-frame header
+        # can be kept while replacing the payload with the combined PPP bytes.
+        return bytearray(pkt[:18]) + combined_ppp
 
     def _request(self, subtype, first, last):
         extra = self._request_raw_extra(subtype, first, last)
