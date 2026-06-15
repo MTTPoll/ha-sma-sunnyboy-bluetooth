@@ -43,6 +43,7 @@ SMA Sunny Boy Bluetooth Home Assistant Integration currently supports:
 * ⚡ MPPT2 Power monitoring
 * ⚡ DC Total Power monitoring
 * 📈 Inverter Efficiency monitoring
+* 〰️ Grid Frequency
 * 🌡️ Inverter temperature monitoring
 * 📈 Daily energy production
 * 📊 Lifetime energy production
@@ -182,6 +183,7 @@ The integration will automatically detect:
 * MPPT1 Power
 * MPPT2 Power
 * DC Total Power
+* Grid Frequency
 * Efficiency
 * Bluetooth Signal Strength
 * SMA Status
@@ -236,8 +238,6 @@ Bluetooth: Connected
 
 Planned or possible future improvements:
 
-* Grid Frequency sensor
-* Grid Relay Status
 * Additional SMA model mappings
 * Additional diagnostic entities
 * More tested inverter models
@@ -291,6 +291,7 @@ Die SMA Sunny Boy Bluetooth Home Assistant Integration unterstützt aktuell:
 * ⚡ MPPT1-Leistung
 * ⚡ MPPT2-Leistung
 * ⚡ DC-Gesamtleistung
+* 〰️ Netz Frequenz
 * 📈 Wirkungsgrad
 * 🌡️ Wechselrichtertemperatur
 * 📈 Tagesertrag
@@ -377,6 +378,7 @@ Integration
 * MPPT1-Leistung
 * MPPT2-Leistung
 * DC-Gesamtleistung
+* Netz Frequenz
 * Wirkungsgrad
 * Bluetooth-Signalstärke
 * SMA Status
@@ -431,8 +433,6 @@ Bluetooth: Verbunden
 
 Geplante Erweiterungen:
 
-* Netzfrequenz-Sensor
-* Netzrelais-Status
 * Weitere SMA-Modell-Erkennung
 * Zusätzliche Diagnose-Entitäten
 * Weitere getestete Wechselrichter
