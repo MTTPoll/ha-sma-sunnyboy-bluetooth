@@ -133,8 +133,16 @@ async def async_setup_entry(hass: HomeAssistant, entry: ConfigEntry) -> bool:
         """Push dynamic device metadata into Home Assistant's device registry."""
         try:
             registry = dr.async_get(hass)
-            device = registry.async_get_device(
-                identifiers={(DOMAIN, entry.data[CONF_BT_ADDRESS])}
+            identifier = (DOMAIN, entry.data[CONF_BT_ADDRESS])
+            device = next(
+                (
+                    dev
+                    for dev in dr.async_entries_for_config_entry(
+                        registry, entry.entry_id
+                    )
+                    if identifier in dev.identifiers
+                ),
+                None,
             )
             if not device:
                 return
